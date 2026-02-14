@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Unlike Helper",
+  "version": "1.0",
+  "description": "YouTube liked videos ro'yxatidan avtomatik o'chirish",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/playlist?list=LL"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YouTube Unlike Helper"
+  }
+}
+
