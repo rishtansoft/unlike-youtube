@@ -3,7 +3,7 @@
 **A powerful Chrome extension to automatically remove liked videos from YouTube and delete comments from Google My Activity.**
 Effortlessly clean up your "Liked Videos" playlist and comment history with a single click.
 
-![Icon](icon-128.png)
+![Icon](128.png)
 
 ## 🚀 Key Features
 
