@@ -1,13 +1,11 @@
 const VIDEOS_TO_REMOVE = 1000;
 const VIDEO_SELECTOR = 'ytd-playlist-video-renderer';
 
-// Tarjimalar lug'ati
 const TRANS = {
   menu: ['menu', 'action', 'more', 'опции', 'amallar', 'boshqa', 'variantlar', 'действия'],
   delete: ['delete', 'remove', 'udaalit', 'удалить', 'olib tashlash', 'o\'chirish', 'yo\'q qilish']
 };
 
-// Logger
 function log(msg, type = 'info') {
   const styles = {
     info: 'color: #3498db; font-weight: bold;',
@@ -18,10 +16,8 @@ function log(msg, type = 'info') {
   console.log(`%c[UnlikeHelper] ${msg}`, styles[type] || styles.info);
 }
 
-// Helper: Kutish
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper: Elementni kutish
 async function waitFor(selector, timeout = 2000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
@@ -32,7 +28,6 @@ async function waitFor(selector, timeout = 2000) {
   return null;
 }
 
-// 1. Menyu tugmasini topish
 function findMenuButton(videoEl) {
   const iconBtns = videoEl.querySelectorAll('yt-icon-button');
   if (iconBtns.length > 0) {
@@ -47,7 +42,6 @@ function findMenuButton(videoEl) {
   return null;
 }
 
-// 2. Popup ichidan "O'chirish" tugmasini topish va bosish
 async function clickDeleteInPopup() {
   const popup = await waitFor('ytd-menu-popup-renderer', 1500);
   if (!popup) return false;
