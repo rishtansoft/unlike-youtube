@@ -32,6 +32,8 @@ async function waitFor(selector, timeout = 2000) {
   return null;
 }
 
+
+
 // 1. Menyu tugmasini topish
 function findMenuButton(videoEl) {
   // Eng aniq usul: yt-icon-button (odatda video qatorining oxirida bo'ladi)
