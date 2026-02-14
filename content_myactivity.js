@@ -25,7 +25,6 @@ async function waitFor(selector, timeout = 2000) {
     return null;
 }
 
-// Injects a floating action button to start the process
 function injectStartButton() {
     if (document.getElementById('my-activity-helper-btn')) return;
 
@@ -64,14 +63,9 @@ function injectStartButton() {
 }
 
 async function clickConfirmDelete() {
-    // Wait for the confirmation dialog
-    // Selectors might vary, usually a generic "Delete" button in a modal
-    // We look for a button that contains 'Delete' text in the dialog
-    await wait(500); // Wait for modal animation
-
-    // Try to find the modal container first (often checks for role="dialog")
+    await wait(500);
     const dialogs = document.querySelectorAll('[role="dialog"]');
-    const activeDialog = Array.from(dialogs).find(d => d.offsetParent !== null); // Visible dialog
+    const activeDialog = Array.from(dialogs).find(d => d.offsetParent !== null);
 
     if (activeDialog) {
         const buttons = activeDialog.querySelectorAll('button');
@@ -85,8 +79,6 @@ async function clickConfirmDelete() {
         }
     }
 
-    // Fallback: search globally if no explicit dialog found or strict structure check fails
-    // But be careful not to click the 'initial' delete button again if it's still there
     return false;
 }
 
@@ -97,9 +89,6 @@ async function startDeletionProcess() {
     log('Starting deletion process...', 'info');
 
     while (true) {
-        // Find all delete buttons (usually 'X' icons with aria-label 'Delete activity item' or similar)
-        // We look for aria-label containing keywords
-        // The specific selector for the 'X' button next to an item
         const buttons = Array.from(document.querySelectorAll('button')).filter(btn => {
             const label = (btn.getAttribute('aria-label') || '').toLowerCase();
             return TRANS.delete.some(k => label.includes(k)) && btn.offsetParent !== null; // Text match and visible
@@ -110,7 +99,6 @@ async function startDeletionProcess() {
             window.scrollTo(0, document.body.scrollHeight);
             await wait(2000);
 
-            // Check again after scroll
             const newButtons = Array.from(document.querySelectorAll('button')).filter(btn => {
                 const label = (btn.getAttribute('aria-label') || '').toLowerCase();
                 return TRANS.delete.some(k => label.includes(k)) && btn.offsetParent !== null;
@@ -127,23 +115,21 @@ async function startDeletionProcess() {
         const btn = buttons[0];
         try {
             btn.scrollIntoView({ behavior: 'auto', block: 'center' });
-            await wait(300); // Stability wait
+            await wait(300);
             btn.click();
 
-            // Check for confirmation modal (sometimes google asks "Confirm you would like to delete...")
             await wait(500);
             const modalHandled = await clickConfirmDelete();
 
             if (modalHandled) {
                 log('Confirmed deletion in modal.', 'info');
-                await wait(500); // Wait for modal to close
+                await wait(500);
             }
 
             deletedCount++;
             fails = 0;
             log(`Deleted item #${deletedCount}`, 'success');
 
-            // Initial wait can be short, but if we go too fast Google might ratelimit or UI might lag
             await wait(1500);
 
         } catch (e) {
@@ -158,10 +144,7 @@ async function startDeletionProcess() {
     }
 }
 
-// Auto-run injection when page matches
 if (location.href.includes('myactivity.google.com')) {
-    // Wait for load
     window.addEventListener('load', () => setTimeout(injectStartButton, 1500));
-    // Also generic fallback
     setTimeout(injectStartButton, 2000);
 }

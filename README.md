@@ -1,17 +1,18 @@
 # YouTube Unlike Helper 🗑️
 
-**A powerful Chrome extension to automatically remove liked videos from YouTube.**
-Effortlessly clean up your "Liked Videos" playlist with a single click.
+**A powerful Chrome extension to automatically remove liked videos from YouTube and delete comments from Google My Activity.**
+Effortlessly clean up your "Liked Videos" playlist and comment history with a single click.
 
-![Icon](logo-128.png)
+![Icon](icon-128.png)
 
 ## 🚀 Key Features
 
-*   **⚡ Automated Clean-up**: Automatically removes videos one by one from your playlist.
+*   **⚡ Automated Like Removal**: Automatically removes videos one by one from your "Liked Videos" playlist.
+*   **🗑️ Bulk Comment Deletion**: Delete all your YouTube comments from Google My Activity page.
 *   **🌍 Multi-Language Support**: Works with YouTube in **English**, **Russian**, and **Uzbek**.
-*   **🔄 Smart Refresh**: Automatically reloads the page to ensure all videos are found and removed.
-*   **🏎️ Optimized Performance**: Designed to work efficiently even in background tabs without slowing down your browser.
-*   **🛡️ Safe & Secure**: Runs entirely locally on your browser. No data is collected.
+*   **🔄 Smart Refresh & Scroll**: Automatically reloads or scrolls to ensure all items are processed.
+*   **🏎️ Optimized Performance**: Designed to work efficiently even in background tabs.
+*   **🛡️ Safe & Secure**: Runs entirely locally on your browser.
 
 ## 📦 Installation
 
@@ -22,11 +23,16 @@ Effortlessly clean up your "Liked Videos" playlist with a single click.
 
 ## 📖 How to Use
 
+### 1. Remove Liked Videos
 1.  Click the extension icon in your Chrome toolbar.
-2.  Click the **"Open Liked Videos"** button.
-3.  Wait for the YouTube page to load.
-4.  The extension will automatically start removing videos.
-5.  Sit back and relax!
+2.  Click **"Open Liked Videos"**.
+3.  The extension will automatically start removing videos from the playlist.
+
+### 2. Delete YouTube Comments
+1.  Click the extension icon.
+2.  Click **"Delete All Comments"**.
+3.  On the **My Activity** page, click the red **"Start Deleting Comments"** button in the bottom right corner.
+4.  The extension will scroll and delete comments automatically.
 
 ## 🛠️ Troubleshooting
 
