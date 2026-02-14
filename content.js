@@ -55,7 +55,7 @@ async function clickDeleteInPopup() {
   });
 
   if (deleteBtn) {
-    log(`Tugma topildi: ${deleteBtn.textContent.trim()}`, 'info');
+    log(`Button found: ${deleteBtn.textContent.trim()}`, 'info');
     deleteBtn.click();
     return true;
   }
@@ -63,14 +63,13 @@ async function clickDeleteInPopup() {
   return false;
 }
 
-// Asosiy logika: Bitta videoni o'chirish
 async function removeSingleVideo(videoEl) {
   try {
     videoEl.scrollIntoView({ behavior: 'auto', block: 'center' });
 
     const menuBtn = findMenuButton(videoEl);
     if (!menuBtn) {
-      log('Menyu tugmasi topilmadi', 'warn');
+      log('Menu button not found', 'warn');
       return false;
     }
 
@@ -79,60 +78,54 @@ async function removeSingleVideo(videoEl) {
     const clicked = await clickDeleteInPopup();
 
     if (clicked) {
-      //log('O\'chirish buyrug\'i yuborildi', 'success');
       videoEl.style.display = 'none';
       videoEl.setAttribute('data-removed', 'true');
       await wait(500);
       return true;
     } else {
       document.body.click();
-      log('Delete tugmasi topilmadi', 'error');
+      log('Delete button not found', 'error');
       return false;
     }
   } catch (e) {
-    log(`Xatolik: ${e.message}`, 'error');
+    log(`Error: ${e.message}`, 'error');
     return false;
   }
 }
 
-// 3. Page Refresh Logic
 function handleRefreshLogic() {
   const isRetrying = sessionStorage.getItem('unlike_retry') === 'true';
   const videos = document.querySelectorAll(VIDEO_SELECTOR);
 
   if (videos.length === 0) {
     if (!isRetrying) {
-      log('Videolar tugadi, lekin ishonch hosil qilish uchun sahifa yangilanmoqda...', 'warn');
+      log('Videos finished, refreshing page to verify...', 'warn');
       sessionStorage.setItem('unlike_retry', 'true');
       window.location.reload();
-      return true; // Reload bo'lyapti
+      return true;
     } else {
-      log('Sahifa yangilandi va videolar topilmadi. Jarayon chindan ham tugadi.', 'success');
+      log('Page refreshed and no videos found. Process completed.', 'success');
       sessionStorage.removeItem('unlike_retry');
-      return true; // Tugadi
+      return true;
     }
   } else {
-    // Videolar bor, demak davom etamiz
     if (isRetrying) {
-      log('Sahifa yangilandi, videolar topildi. Davom etamiz...', 'info');
-      // Flagni o'chirib turamiz, toki yana tugagunicha
+      log('Page refreshed, videos found. Continuing...', 'info');
       sessionStorage.removeItem('unlike_retry');
     }
-    return false; // Tugamadi, davom etish kerak
+    return false;
   }
 }
 
-// 4. Background Tab Optimization
 function getDynamicWait(ms) {
   if (document.hidden) {
-    // Orqa fonda vizual narsalarni kutish shart emas
     return Math.max(100, ms / 2);
   }
   return ms;
 }
 
 async function startProcess() {
-  log('Jarayon boshlandi (v2.1 - Refresh & Background Fix)...', 'success');
+  log('Process started (v2.1 - Refresh & Background Fix)...', 'success');
 
   if (handleRefreshLogic()) {
     return;
@@ -161,11 +154,11 @@ async function startProcess() {
       await wait(waitTime);
     } else {
       fails++;
-      log(`O'chirish muvaffaqiyatsiz. Qayta urinish ${fails}/3`, 'warn');
+      log(`Removal failed. Retry ${fails}/3`, 'warn');
       await wait(getDynamicWait(2000));
 
       if (fails >= 3) {
-        log('Ketma-ket xatoliklar, keyingi videoga o\'tamiz...', 'error');
+        log('Consecutive errors, skipping to next video...', 'error');
         currentVideo.style.display = 'none';
         currentVideo.setAttribute('data-removed', 'skipped');
         fails = 0;
@@ -176,13 +169,11 @@ async function startProcess() {
   handleRefreshLogic();
 }
 
-// Ishga tushirish
 if (window.location.href.includes('youtube.com/playlist?list=LL')) {
-  // DOM to'liq yuklangach
   const observer = new MutationObserver((mutations, obs) => {
     const v = document.querySelector(VIDEO_SELECTOR);
     if (v) {
-      obs.disconnect(); // Bir marta topilsa bo'ldi
+      obs.disconnect();
       setTimeout(startProcess, 1000);
     }
   });
