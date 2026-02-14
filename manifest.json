@@ -13,9 +13,15 @@
       "run_at": "document_idle"
     }
   ],
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "YouTube Unlike Helper"
+    "default_title": "YouTube Unlike Helper",
+    "default_icon": "icon.png"
   }
 }
 

@@ -32,18 +32,13 @@ async function waitFor(selector, timeout = 2000) {
   return null;
 }
 
-
-
 // 1. Menyu tugmasini topish
 function findMenuButton(videoEl) {
-  // Eng aniq usul: yt-icon-button (odatda video qatorining oxirida bo'ladi)
   const iconBtns = videoEl.querySelectorAll('yt-icon-button');
   if (iconBtns.length > 0) {
-    // Ko'pincha oxirgi tugma menyu bo'ladi
     return iconBtns[iconBtns.length - 1];
   }
 
-  // Fallback: barcha buttonlarni tekshirish
   const buttons = videoEl.querySelectorAll('button');
   for (const btn of buttons) {
     const label = (btn.getAttribute('aria-label') || '').toLowerCase();
@@ -54,11 +49,9 @@ function findMenuButton(videoEl) {
 
 // 2. Popup ichidan "O'chirish" tugmasini topish va bosish
 async function clickDeleteInPopup() {
-  // Popup ochilishini kutamiz
   const popup = await waitFor('ytd-menu-popup-renderer', 1500);
   if (!popup) return false;
 
-  // Biroz render bo'lishini kutish
   await wait(200);
 
   const items = Array.from(popup.querySelectorAll('ytd-menu-service-item-renderer, tp-yt-paper-item'));
@@ -79,35 +72,25 @@ async function clickDeleteInPopup() {
 // Asosiy logika: Bitta videoni o'chirish
 async function removeSingleVideo(videoEl) {
   try {
-    // 1. Videoni ko'rinadigan zonaga olib kelish (muhm!)
     videoEl.scrollIntoView({ behavior: 'auto', block: 'center' });
 
-    // 2. Menyu tugmasini topish
     const menuBtn = findMenuButton(videoEl);
     if (!menuBtn) {
       log('Menyu tugmasi topilmadi', 'warn');
       return false;
     }
 
-    // 3. Menyuni ochish
     menuBtn.click();
 
-    // 4. "Delete" tugmasini popup ichidan bosish
     const clicked = await clickDeleteInPopup();
 
     if (clicked) {
-      log('O\'chirish buyrug\'i yuborildi', 'success');
-
-      // 5. MUHIM: Videoni darhol yashirish (Youtube o'chirgunicha kutib o'tirmaymiz)
-      // Bu bizga keyingi siklda xuddi shu videoni qayta tanlamaslikka yordam beradi
+      //log('O\'chirish buyrug\'i yuborildi', 'success');
       videoEl.style.display = 'none';
       videoEl.setAttribute('data-removed', 'true');
-
-      // Youtube animatsiyasi va popup yopilishi uchun ozgina pauza
       await wait(500);
       return true;
     } else {
-      // Agar delete topilmasa, menyuni yopish uchun tashqariga bosamiz
       document.body.click();
       log('Delete tugmasi topilmadi', 'error');
       return false;
@@ -118,42 +101,77 @@ async function removeSingleVideo(videoEl) {
   }
 }
 
+// 3. Page Refresh Logic
+function handleRefreshLogic() {
+  const isRetrying = sessionStorage.getItem('unlike_retry') === 'true';
+  const videos = document.querySelectorAll(VIDEO_SELECTOR);
+
+  if (videos.length === 0) {
+    if (!isRetrying) {
+      log('Videolar tugadi, lekin ishonch hosil qilish uchun sahifa yangilanmoqda...', 'warn');
+      sessionStorage.setItem('unlike_retry', 'true');
+      window.location.reload();
+      return true; // Reload bo'lyapti
+    } else {
+      log('Sahifa yangilandi va videolar topilmadi. Jarayon chindan ham tugadi.', 'success');
+      sessionStorage.removeItem('unlike_retry');
+      return true; // Tugadi
+    }
+  } else {
+    // Videolar bor, demak davom etamiz
+    if (isRetrying) {
+      log('Sahifa yangilandi, videolar topildi. Davom etamiz...', 'info');
+      // Flagni o'chirib turamiz, toki yana tugagunicha
+      sessionStorage.removeItem('unlike_retry');
+    }
+    return false; // Tugamadi, davom etish kerak
+  }
+}
+
+// 4. Background Tab Optimization
+function getDynamicWait(ms) {
+  if (document.hidden) {
+    // Orqa fonda vizual narsalarni kutish shart emas
+    return Math.max(100, ms / 2);
+  }
+  return ms;
+}
+
 async function startProcess() {
-  log('Jarayon boshlandi (Optimized v3)...', 'success');
+  log('Jarayon boshlandi (v2.1 - Refresh & Background Fix)...', 'success');
+
+  if (handleRefreshLogic()) {
+    return;
+  }
 
   let count = 0;
   let fails = 0;
 
   while (count < VIDEOS_TO_REMOVE) {
-    // Faqat hali o'chirilmagan (biz yashirmagan) videolarni olamiz
-    // data-removed=true bo'lmagan va ko'rinib turgan videolar
     const videos = Array.from(document.querySelectorAll(VIDEO_SELECTOR))
       .filter(v => v.style.display !== 'none' && !v.hasAttribute('data-removed'));
 
     if (videos.length === 0) {
-      log('Barcha videolar tugadi!', 'success');
+      if (handleRefreshLogic()) return;
       break;
     }
 
-    // Har doim eng birinchi turgan videoni olamiz
     const currentVideo = videos[0];
+    const waitTime = getDynamicWait(800);
 
-    log(`Video #${count + 1} qayta ishlanmoqda...`, 'info');
     const success = await removeSingleVideo(currentVideo);
 
     if (success) {
       count++;
       fails = 0;
-      // Spam hisoblanmaslik uchun har bir videodan keyin minimal pauza
-      await wait(800);
+      await wait(waitTime);
     } else {
       fails++;
       log(`O'chirish muvaffaqiyatsiz. Qayta urinish ${fails}/3`, 'warn');
-      await wait(2000); // Xatolik bo'lsa ko'proq kutamiz
+      await wait(getDynamicWait(2000));
 
       if (fails >= 3) {
         log('Ketma-ket xatoliklar, keyingi videoga o\'tamiz...', 'error');
-        // Bu videoni o'tkazib yuborish uchun uni baribir yashiramiz
         currentVideo.style.display = 'none';
         currentVideo.setAttribute('data-removed', 'skipped');
         fails = 0;
@@ -161,7 +179,7 @@ async function startProcess() {
     }
   }
 
-  log(`Tugadi! Jami ${count} ta video olib tashlandi.`, 'success');
+  handleRefreshLogic();
 }
 
 // Ishga tushirish
